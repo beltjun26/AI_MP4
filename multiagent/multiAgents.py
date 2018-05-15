@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -68,20 +68,52 @@ class ReflexAgent(Agent):
         """
         # Useful information you can extract from a GameState (pacman.py)
         successorGameState = currentGameState.generatePacmanSuccessor(action)
+        curPos = currentGameState.getPacmanPosition()
         newPos = successorGameState.getPacmanPosition()
         newFood = successorGameState.getFood()
         newGhostStates = successorGameState.getGhostStates()
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
+        ghostsPos = successorGameState.getGhostPositions()
 
         "*** YOUR CODE HERE ***"
         score = successorGameState.getScore()
-
+        nearestGhost = 1000
+        curToNearestGhost = 0
+        for ghostPos in ghostsPos:
+            nearGhost = manhattanDistance(ghostPos, newPos)
+            if(nearGhost < nearestGhost):
+                nearestGhost = nearGhost
+                curToNearestGhost = manhattanDistance(ghostPos, curPos)
+        nearestFood = 1000
+        curToNearestFood = 0
+        for food in newFood.asList():
+            nearFood = manhattanDistance(food, newPos)
+            if(nearFood < nearestFood):
+                nearestFood = nearFood
+                curToNearestFood = manhattanDistance(food, curPos)
+        # this condition takes care when pacman is near to the ghost while far from the nearest food
+        if(nearestFood > nearestGhost):
+                # meaning that pacman is getting near to the nearest food and getting far from the ghost
+                if(nearestGhost > curToNearestGhost and nearestFood < curToNearestFood):
+                    score += 2
+                else:
+                    if(nearGhost > 2):
+                        if(nearestFood < curToNearestFood):
+                            score += 1
+                    else:
+                        score -= 1
+        # if the nearest food is nearer than the ghost
+        if(nearestFood < nearestGhost):
+            if(nearestFood < curToNearestFood):
+                score += 1
+            else:
+                score -= 1
         # HINTS:
         # Given currentGameState and successorGameState, determine if the next state is good / bad
         # Compute a numerical score for next state that will reflect this
         # Base score = successorGameState.getScore() - Line 77
         # Can increase / decrease this score depending on:
-        #   new pacman position, ghost position, food position, 
+        #   new pacman position, ghost position, food position,
         #   distances to ghosts, distances to food
         # You can choose which features to use in your evaluation function
         # You can also put more weight to some features
@@ -144,11 +176,23 @@ class MinimaxAgent(MultiAgentSearchAgent):
         currentDepth = 0
         currentAgentIndex = self.index # agent's index
         action,score = self.value(gameState, currentAgentIndex, currentDepth)
-        return action 
+        return action
 
     # Note: always returns (action,score) pair
     def value(self, gameState, currentAgentIndex, currentDepth):
-      pass
+        if(currentAgentIndex == gameState.getNumAgents()):
+            currentAgentIndex = 0
+            currentDepth += 1
+        if(currentDepth == self.depth):
+            return (None, self.evaluationFunction(gameState))
+        if(gameState.isWin() or gameState.isLose()):
+            return (None, self.evaluationFunction(gameState))
+        print(gameState.getLegalActions(currentAgentIndex))
+        if(currentAgentIndex == 0):
+            return self.max_value(gameState, currentAgentIndex, currentDepth)
+        else:
+            return self.min_value(gameState, currentAgentIndex, currentDepth)
+
       # Check when to update depth
       # check if currentDepth == self.depth
       #   if it is, stop recursion and return score of gameState based on self.evaluationFunction
@@ -158,9 +202,20 @@ class MinimaxAgent(MultiAgentSearchAgent):
       # if our agent: return max_value(....)
       # otherwise: return min_value(....)
 
+
+
     # Note: always returns (action,score) pair
     def max_value(self, gameState, currentAgentIndex, currentDepth):
-      pass
+        current_value = -100000
+        actionToTake = None
+        for availAction in gameState.getLegalActions(currentAgentIndex):
+            successorState = gameState.generateSuccessor(currentAgentIndex, availAction)
+            next_action, next_score = self.value(successorState, currentAgentIndex+1, currentDepth)
+            if(next_score > current_value):
+                current_value = next_score
+                actionToTake = availAction
+        return (actionToTake, current_value)
+
       # current_value = -inf
       # loop over each action available to current agent:
       # (hint: use gameState.getLegalActions(...) for this)
@@ -172,7 +227,15 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
     # Note: always returns (action,score) pair
     def min_value(self, gameState, currentAgentIndex, currentDepth):
-      pass
+      current_value = 100000
+      actionToTake = None
+      for availAction in gameState.getLegalActions(currentAgentIndex):
+          successorState = gameState.generateSuccessor(currentAgentIndex, availAction)
+          next_action, next_score = self.value(successorState, currentAgentIndex+1, currentDepth)
+          if(next_score < current_value):
+              current_value = next_score
+              actionToTake = availAction
+      return (actionToTake, current_value)
       # current_value = inf
       # loop over each action available to current agent:
       # (hint: use gameState.getLegalActions(...) for this)
@@ -199,7 +262,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         alpha = float('inf') * -1
         beta = float('inf')
         action,score = self.value(gameState, currentAgentIndex, currentDepth, alpha, beta)
-        return action 
+        return action
 
     # Note: always returns (action,score) pair
     def value(self, gameState, currentAgentIndex, currentDepth, alpha, beta):
@@ -239,7 +302,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         currentDepth = 0
         currentAgentIndex = self.index # agent's index
         action,score = self.value(gameState, currentAgentIndex, currentDepth)
-        return action 
+        return action
 
     # Note: always returns (action,score) pair
     def value(self, gameState, currentAgentIndex, currentDepth):
@@ -263,8 +326,8 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
       #   checking all actions
       #   for each action, compute the score the nextGameState will get
       #   multiply score by probability
-      # Return (None,total_expected_value) 
-      # None action --> we only need to compute exp_value but since the 
+      # Return (None,total_expected_value)
+      # None action --> we only need to compute exp_value but since the
       # signature return values of these functions are (action,score), we will return an empty action
 
 
@@ -288,4 +351,3 @@ def betterEvaluationFunction(currentGameState):
 
 # Abbreviation
 better = betterEvaluationFunction
-
