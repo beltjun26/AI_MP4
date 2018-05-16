@@ -187,7 +187,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
             return (None, self.evaluationFunction(gameState))
         if(gameState.isWin() or gameState.isLose()):
             return (None, self.evaluationFunction(gameState))
-        print(gameState.getLegalActions(currentAgentIndex))
         if(currentAgentIndex == 0):
             return self.max_value(gameState, currentAgentIndex, currentDepth)
         else:
@@ -266,13 +265,35 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
     # Note: always returns (action,score) pair
     def value(self, gameState, currentAgentIndex, currentDepth, alpha, beta):
-      pass
+      if(currentAgentIndex == gameState.getNumAgents()):
+          currentAgentIndex = 0
+          currentDepth += 1
+      if(currentDepth == self.depth):
+          return (None, self.evaluationFunction(gameState))
+      if(gameState.isWin() or gameState.isLose()):
+          return (None, self.evaluationFunction(gameState))
+      if(currentAgentIndex == 0):
+          return self.max_value(gameState, currentAgentIndex, currentDepth, alpha, beta)
+      else:
+          return self.min_value(gameState, currentAgentIndex, currentDepth, alpha, beta)
       # More or less the same with MinimaxAgent's value() method
       # Just update the calls to max_value and min_value (should now include alpha, beta params)
 
     # Note: always returns (action,score) pair
     def max_value(self, gameState, currentAgentIndex, currentDepth, alpha, beta):
-      pass
+        current_value = -100000
+        actionToTake = None
+        for availAction in gameState.getLegalActions(currentAgentIndex):
+            successorState = gameState.generateSuccessor(currentAgentIndex, availAction)
+            next_action, next_score = self.value(successorState, currentAgentIndex+1, currentDepth, alpha, beta)
+            if(next_score > current_value):
+                current_value = next_score
+                actionToTake = availAction
+            if(current_value > beta):
+                return (actionToTake, current_value)
+            if(current_value > alpha):
+                alpha = current_value
+        return (actionToTake, current_value)
       # Similar to MinimaxAgent's max_value() method
       # Include checking if current_value is worse than beta
       #   if so, immediately return current (action,current_value) tuple
@@ -280,7 +301,19 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
     # Note: always returns (action,score) pair
     def min_value(self, gameState, currentAgentIndex, currentDepth, alpha, beta):
-      pass
+        current_value = 100000
+        actionToTake = None
+        for availAction in gameState.getLegalActions(currentAgentIndex):
+            successorState = gameState.generateSuccessor(currentAgentIndex, availAction)
+            next_action, next_score = self.value(successorState, currentAgentIndex+1, currentDepth, alpha, beta)
+            if(next_score < current_value):
+                current_value = next_score
+                actionToTake = availAction
+            if(current_value < alpha):
+                return (actionToTake, current_value)
+            if(current_value < beta):
+                beta = current_value
+        return (actionToTake, current_value)
       # Similar to MinimaxAgent's min_value() method
       # Include checking if current_value is worse than alpha
       #   if so, immediately return current (action,current_value) tuple
