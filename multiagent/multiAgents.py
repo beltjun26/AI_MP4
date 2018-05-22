@@ -94,7 +94,7 @@ class ReflexAgent(Agent):
                 nearestFood = nearFood
                 curToNearestFood = manhattanDistance(food, curPos)
         # this condition takes care when pacman is near to the ghost while far from the nearest food
-        if(nearestFood > nearestGhost):
+        if(nearestFood >= nearestGhost):
                 # meaning that pacman is getting near to the nearest food and getting far from the ghost
                 if(nearestGhost > curToNearestGhost and nearestFood < curToNearestFood):
                     score += 2
