@@ -79,11 +79,13 @@ class ReflexAgent(Agent):
         score = successorGameState.getScore()
         nearestGhost = 1000
         curToNearestGhost = 0
+        
         for ghostPos in ghostsPos:
             nearGhost = manhattanDistance(ghostPos, newPos)
             if(nearGhost < nearestGhost):
                 nearestGhost = nearGhost
                 curToNearestGhost = manhattanDistance(ghostPos, curPos)
+
         nearestFood = 1000
         curToNearestFood = 0
         for food in newFood.asList():
@@ -339,18 +341,49 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
 
     # Note: always returns (action,score) pair
     def value(self, gameState, currentAgentIndex, currentDepth):
-      pass
+        if(currentAgentIndex == gameState.getNumAgents()):
+            currentAgentIndex = 0
+            currentDepth += 1
+        if(currentDepth == self.depth):
+            return (None, self.evaluationFunction(gameState))
+        if(gameState.isWin() or gameState.isLose()):
+            return (None, self.evaluationFunction(gameState))
+        if(currentAgentIndex == 0):
+            return self.max_value(gameState, currentAgentIndex, currentDepth)
+        else:
+            return self.exp_value(gameState, currentAgentIndex, currentDepth)
       # More or less the same with MinimaxAgent's value() method
       # Only difference: use exp_value instead of min_value
 
     # Note: always returns (action,score) pair
     def max_value(self, gameState, currentAgentIndex, currentDepth):
-      pass
+        current_value = -100000
+        actionToTake = None
+        for availAction in gameState.getLegalActions(currentAgentIndex):
+            successorState = gameState.generateSuccessor(currentAgentIndex, availAction)
+            next_action, next_score = self.value(successorState, currentAgentIndex+1, currentDepth)
+            if(next_score > current_value):
+                current_value = next_score
+                actionToTake = availAction
+        return (actionToTake, current_value)
       # Exactly like MinimaxAgent's max_value() method
 
     # Note: always returns (action,score) pair
     def exp_value(self, gameState, currentAgentIndex, currentDepth):
-      pass
+        v = 0
+        actionToTake = None
+        legalActions = gameState.getLegalActions(currentAgentIndex)
+        prob = 1.0/len(legalActions)
+
+        if(prob == 0):
+          return (None, 0)
+
+        for availAction in legalActions:
+            successorState = gameState.generateSuccessor(currentAgentIndex, availAction)
+            next_action, next_v = self.value(successorState, currentAgentIndex+1, currentDepth)
+            v = v + (next_v * prob)
+
+        return (None, v)
       # use gameState.getLegalActions(...) to get list of actions
       # assume uniform probability of possible actions
       # compute probabilities of each action
@@ -373,6 +406,9 @@ def betterEvaluationFunction(currentGameState):
     """
     "*** YOUR CODE HERE ***"
     score = currentGameState.getScore()
+
+
+
     # Similar to Q1, only this time there's only one state (no nextGameState to compare it to)
     # Use similar features here: position, food, ghosts, scared ghosts, distances, etc.
     # Can use manhattanDistance() function
