@@ -14,7 +14,7 @@
 
 from util import manhattanDistance
 from game import Directions
-import random, util
+import random, util, extra
 
 from game import Agent
 
@@ -119,7 +119,7 @@ class ReflexAgent(Agent):
         #   distances to ghosts, distances to food
         # You can choose which features to use in your evaluation function
         # You can also put more weight to some features
-
+        print score
         return score
 
 def scoreEvaluationFunction(currentGameState):
@@ -182,18 +182,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
     # Note: always returns (action,score) pair
     def value(self, gameState, currentAgentIndex, currentDepth):
-        if(currentAgentIndex == gameState.getNumAgents()):
-            currentAgentIndex = 0
-            currentDepth += 1
-        if(currentDepth == self.depth):
-            return (None, self.evaluationFunction(gameState))
-        if(gameState.isWin() or gameState.isLose()):
-            return (None, self.evaluationFunction(gameState))
-        if(currentAgentIndex == 0):
-            return self.max_value(gameState, currentAgentIndex, currentDepth)
-        else:
-            return self.min_value(gameState, currentAgentIndex, currentDepth)
-
+      return extra.value(self, gameState, currentAgentIndex, currentDepth, 1, None, None)
       # Check when to update depth
       # check if currentDepth == self.depth
       #   if it is, stop recursion and return score of gameState based on self.evaluationFunction
@@ -207,15 +196,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
     # Note: always returns (action,score) pair
     def max_value(self, gameState, currentAgentIndex, currentDepth):
-        current_value = -100000
-        actionToTake = None
-        for availAction in gameState.getLegalActions(currentAgentIndex):
-            successorState = gameState.generateSuccessor(currentAgentIndex, availAction)
-            next_action, next_score = self.value(successorState, currentAgentIndex+1, currentDepth)
-            if(next_score > current_value):
-                current_value = next_score
-                actionToTake = availAction
-        return (actionToTake, current_value)
+      return extra.max_value(self, gameState, currentAgentIndex, currentDepth, None, None)
 
       # current_value = -inf
       # loop over each action available to current agent:
@@ -228,15 +209,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
     # Note: always returns (action,score) pair
     def min_value(self, gameState, currentAgentIndex, currentDepth):
-      current_value = 100000
-      actionToTake = None
-      for availAction in gameState.getLegalActions(currentAgentIndex):
-          successorState = gameState.generateSuccessor(currentAgentIndex, availAction)
-          next_action, next_score = self.value(successorState, currentAgentIndex+1, currentDepth)
-          if(next_score < current_value):
-              current_value = next_score
-              actionToTake = availAction
-      return (actionToTake, current_value)
+      return extra.min_value(self, gameState, currentAgentIndex, currentDepth, None, None)
       # current_value = inf
       # loop over each action available to current agent:
       # (hint: use gameState.getLegalActions(...) for this)
@@ -267,35 +240,13 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
     # Note: always returns (action,score) pair
     def value(self, gameState, currentAgentIndex, currentDepth, alpha, beta):
-      if(currentAgentIndex == gameState.getNumAgents()):
-          currentAgentIndex = 0
-          currentDepth += 1
-      if(currentDepth == self.depth):
-          return (None, self.evaluationFunction(gameState))
-      if(gameState.isWin() or gameState.isLose()):
-          return (None, self.evaluationFunction(gameState))
-      if(currentAgentIndex == 0):
-          return self.max_value(gameState, currentAgentIndex, currentDepth, alpha, beta)
-      else:
-          return self.min_value(gameState, currentAgentIndex, currentDepth, alpha, beta)
+      return extra.value(self, gameState, currentAgentIndex, currentDepth, 2, alpha, beta)
       # More or less the same with MinimaxAgent's value() method
       # Just update the calls to max_value and min_value (should now include alpha, beta params)
 
     # Note: always returns (action,score) pair
     def max_value(self, gameState, currentAgentIndex, currentDepth, alpha, beta):
-        current_value = -100000
-        actionToTake = None
-        for availAction in gameState.getLegalActions(currentAgentIndex):
-            successorState = gameState.generateSuccessor(currentAgentIndex, availAction)
-            next_action, next_score = self.value(successorState, currentAgentIndex+1, currentDepth, alpha, beta)
-            if(next_score > current_value):
-                current_value = next_score
-                actionToTake = availAction
-            if(current_value > beta):
-                return (actionToTake, current_value)
-            if(current_value > alpha):
-                alpha = current_value
-        return (actionToTake, current_value)
+        return extra.max_value(self, gameState, currentAgentIndex, currentDepth, alpha, beta)
       # Similar to MinimaxAgent's max_value() method
       # Include checking if current_value is worse than beta
       #   if so, immediately return current (action,current_value) tuple
@@ -303,19 +254,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
 
     # Note: always returns (action,score) pair
     def min_value(self, gameState, currentAgentIndex, currentDepth, alpha, beta):
-        current_value = 100000
-        actionToTake = None
-        for availAction in gameState.getLegalActions(currentAgentIndex):
-            successorState = gameState.generateSuccessor(currentAgentIndex, availAction)
-            next_action, next_score = self.value(successorState, currentAgentIndex+1, currentDepth, alpha, beta)
-            if(next_score < current_value):
-                current_value = next_score
-                actionToTake = availAction
-            if(current_value < alpha):
-                return (actionToTake, current_value)
-            if(current_value < beta):
-                beta = current_value
-        return (actionToTake, current_value)
+        return extra.min_value(self, gameState, currentAgentIndex, currentDepth, alpha, beta)
       # Similar to MinimaxAgent's min_value() method
       # Include checking if current_value is worse than alpha
       #   if so, immediately return current (action,current_value) tuple
@@ -341,49 +280,18 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
 
     # Note: always returns (action,score) pair
     def value(self, gameState, currentAgentIndex, currentDepth):
-        if(currentAgentIndex == gameState.getNumAgents()):
-            currentAgentIndex = 0
-            currentDepth += 1
-        if(currentDepth == self.depth):
-            return (None, self.evaluationFunction(gameState))
-        if(gameState.isWin() or gameState.isLose()):
-            return (None, self.evaluationFunction(gameState))
-        if(currentAgentIndex == 0):
-            return self.max_value(gameState, currentAgentIndex, currentDepth)
-        else:
-            return self.exp_value(gameState, currentAgentIndex, currentDepth)
+      return extra.value(self, gameState, currentAgentIndex, currentDepth, 3, None, None)
       # More or less the same with MinimaxAgent's value() method
       # Only difference: use exp_value instead of min_value
 
     # Note: always returns (action,score) pair
     def max_value(self, gameState, currentAgentIndex, currentDepth):
-        current_value = -100000
-        actionToTake = None
-        for availAction in gameState.getLegalActions(currentAgentIndex):
-            successorState = gameState.generateSuccessor(currentAgentIndex, availAction)
-            next_action, next_score = self.value(successorState, currentAgentIndex+1, currentDepth)
-            if(next_score > current_value):
-                current_value = next_score
-                actionToTake = availAction
-        return (actionToTake, current_value)
+      return extra.max_value(self, gameState, currentAgentIndex, currentDepth, None, None)
       # Exactly like MinimaxAgent's max_value() method
 
     # Note: always returns (action,score) pair
     def exp_value(self, gameState, currentAgentIndex, currentDepth):
-        v = 0
-        actionToTake = None
-        legalActions = gameState.getLegalActions(currentAgentIndex)
-        prob = 1.0/len(legalActions)
-
-        if(prob == 0):
-          return (None, 0)
-
-        for availAction in legalActions:
-            successorState = gameState.generateSuccessor(currentAgentIndex, availAction)
-            next_action, next_v = self.value(successorState, currentAgentIndex+1, currentDepth)
-            v = v + (next_v * prob)
-
-        return (None, v)
+      return extra.exp_value(self, gameState, currentAgentIndex, currentDepth)
       # use gameState.getLegalActions(...) to get list of actions
       # assume uniform probability of possible actions
       # compute probabilities of each action
@@ -405,16 +313,39 @@ def betterEvaluationFunction(currentGameState):
       DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-    score = currentGameState.getScore()
+    score = currentGameState.getScore() 
+    curPos = currentGameState.getPacmanPosition()
+    food = currentGameState.getFood()
+    ghostStates = currentGameState.getGhostStates()
+    scaredTimes = [ghostState.scaredTimer for ghostState in ghostStates]
+    ghostsPos = currentGameState.getGhostPositions()
+
+    nearestGhost = float('inf')
+    for ghostPos in ghostsPos:
+        nearGhost = manhattanDistance(ghostPos, curPos)
+        if(nearGhost < nearestGhost):
+            nearestGhost = nearGhost
+    score -= nearestGhost
 
 
-
+    nearestFood = float('inf')
+    for food in food.asList():
+        nearFood = manhattanDistance(food, curPos)
+        if(nearFood < nearestFood):
+            nearestFood = nearFood
+    score += 2 * nearestFood
     # Similar to Q1, only this time there's only one state (no nextGameState to compare it to)
     # Use similar features here: position, food, ghosts, scared ghosts, distances, etc.
     # Can use manhattanDistance() function
     # You can add weights to these features
     # Update the score variable (add / subtract), depending on the features and their weights
     # Note: Edit the Description in the string above to describe what you did here
+    # print nearestGhost, nearestFood
+    # if(nearestFood < nearestGhost):
+    #   score += nearestFood
+
+    # if(nearestGhost < 10):
+    #   score -= nearestGhost
 
     return score
 
