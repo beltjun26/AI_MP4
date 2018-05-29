@@ -79,7 +79,7 @@ class ReflexAgent(Agent):
         score = successorGameState.getScore()
         nearestGhost = 1000
         curToNearestGhost = 0
-
+        # looping through all the ghosts and find what is the nearest ghost and how near
         for ghostPos in ghostsPos:
             nearGhost = manhattanDistance(ghostPos, newPos)
             if(nearGhost < nearestGhost):
@@ -88,6 +88,7 @@ class ReflexAgent(Agent):
 
         nearestFood = 1000
         curToNearestFood = 0
+        # this simply loops through the food in the foodlist to know what is the closest food
         for food in newFood.asList():
             nearFood = manhattanDistance(food, newPos)
             if(nearFood < nearestFood):
@@ -99,10 +100,13 @@ class ReflexAgent(Agent):
                 if(nearestGhost > curToNearestGhost and nearestFood < curToNearestFood):
                     score += 2
                 else:
+                    # as long as the nearest ghost has distance of 2 and greater
                     if(nearGhost > 2):
+                        # we will still persue the food here
                         if(nearestFood < curToNearestFood):
                             score += 1
                     else:
+                        # meaning that the ghost is pretty much near
                         score -= 1
         # if the nearest food is nearer than the ghost
         if(nearestFood < nearestGhost):
@@ -182,6 +186,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
     # Note: always returns (action,score) pair
     def value(self, gameState, currentAgentIndex, currentDepth):
+        # we will use the same function as the alpha beta prunning only that we set the alpha and beta into None
       return extra.value(self, gameState, currentAgentIndex, currentDepth, 1, None, None)
       # Check when to update depth
       # check if currentDepth == self.depth
@@ -196,6 +201,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
     # Note: always returns (action,score) pair
     def max_value(self, gameState, currentAgentIndex, currentDepth):
+        # we will use the same function as the alpha beta prunning only that we set the alpha and beta into None
       return extra.max_value(self, gameState, currentAgentIndex, currentDepth, None, None)
 
       # current_value = -inf
@@ -209,6 +215,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
     # Note: always returns (action,score) pair
     def min_value(self, gameState, currentAgentIndex, currentDepth):
+        # we will use the same function as the alpha beta prunning only that we set the alpha and beta into None
       return extra.min_value(self, gameState, currentAgentIndex, currentDepth, None, None)
       # current_value = inf
       # loop over each action available to current agent:
@@ -332,12 +339,16 @@ def betterEvaluationFunction(currentGameState):
         nearFood = manhattanDistance(food, curPos)
         if(nearFood < nearestFood):
             nearestFood = nearFood
-
+    # since it looks the same with the q1 we used the logic but much simplier
+    # if the ghost is nearer than the food
     if(nearestFood >= nearestGhost):
+        # as long as the ghost has a manhattanDistance of 2 or greater we will pursue the path
         if(nearestGhost > 2):
             score += 1
+        # but if it is almost next to pacman then we get away from there
         else:
             score -= 1
+    # if the food is nearer than the ghost, we will highly encourage pacman to go that path by increasing the score by 2
     if(nearestFood < nearestGhost):
         score += 2
     # Similar to Q1, only this time there's only one state (no nextGameState to compare it to)
