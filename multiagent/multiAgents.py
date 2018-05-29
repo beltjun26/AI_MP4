@@ -79,7 +79,7 @@ class ReflexAgent(Agent):
         score = successorGameState.getScore()
         nearestGhost = 1000
         curToNearestGhost = 0
-        
+
         for ghostPos in ghostsPos:
             nearGhost = manhattanDistance(ghostPos, newPos)
             if(nearGhost < nearestGhost):
@@ -313,7 +313,7 @@ def betterEvaluationFunction(currentGameState):
       DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-    score = currentGameState.getScore() 
+    score = currentGameState.getScore()
     curPos = currentGameState.getPacmanPosition()
     food = currentGameState.getFood()
     ghostStates = currentGameState.getGhostStates()
@@ -327,13 +327,19 @@ def betterEvaluationFunction(currentGameState):
             nearestGhost = nearGhost
     score -= nearestGhost
 
-
     nearestFood = float('inf')
     for food in food.asList():
         nearFood = manhattanDistance(food, curPos)
         if(nearFood < nearestFood):
             nearestFood = nearFood
-    score += 2 * nearestFood
+
+    if(nearestFood >= nearestGhost):
+        if(nearestGhost > 2):
+            score += 1
+        else:
+            score -= 1
+    if(nearestFood < nearestGhost):
+        score += 2
     # Similar to Q1, only this time there's only one state (no nextGameState to compare it to)
     # Use similar features here: position, food, ghosts, scared ghosts, distances, etc.
     # Can use manhattanDistance() function
